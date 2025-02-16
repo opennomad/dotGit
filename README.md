@@ -41,13 +41,13 @@ Both of these aliases also set git's `status.showUntrackedFiles` to `no`. This p
 
 ## installation
 
-1. clone this repository or simply copy the [dotGit.sh](./dotGit.sh)
+1. clone this repository or simply copy the [dotgit.sh](./dotgit.sh)
 2. add some config sauce to your shell initialization (.i.e. `.zshrc` or `.bashrc`). The `DOT_FILES` and `DOT_HOME` variables **must be set** for the dotGit.sh to load!
   ```bash
   export DOT_FILES="${HOME}/.dotfiles"
   export DOT_HOME="${HOME}"
   export DOT_ORIGIN="git@github.com:user/your-dotfiles-repo.git" # optional
-  source <path to dotGit.sh>`
+  source <path to dotgit.sh>`
   ```
 3. restart your shell or `source ~/.zshrc` or `source ~/.bashrc`
 4. run `.ginit` or `.gclone` (see the *initial clone setup* below, if cloning)
