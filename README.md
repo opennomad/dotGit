@@ -1,8 +1,8 @@
-# dotGit
+# dotGit - 🐚 shell aliases + 🪄 dotfiles +  🧸 bare git repo 
 
-There are a lot of ways to manage your dotfiles. dotGit implements an idea that has been floating around on the internet for a while: a bare git repo for storing your dotfiles. A quick search finds [this](https://news.ycombinator.com/item?id=11070797), but there may be older sources.
+There are a lot of ways to manage your dotfiles. dotGit implements an idea that has been floating around on the internet for a while: a bare git repo for storing your dotfiles. A quick search finds [this post](https://news.ycombinator.com/item?id=11070797), but there may be older sources.
 
-dotGit has modest aims
+dotGit has modest aims:
 - 🏡 keep config files where tools expect them in `$HOME`
 - 🐚 stay as light and close to git and the shell as possible
 - 🚀 reduce friction and make config changes quick and convenient
