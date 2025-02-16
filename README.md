@@ -28,6 +28,7 @@ dotGit gives you a handful of shell aliases (tested with `zsh`🐚 and `bash`) t
 There are two additional aliases used to (re)set up the bare git setup.
 - `.ginit` creates the bare git repository in `$DOT_FILES` directory.
 - `.gclone` will clone the repository set in `$DOT_ORIGIN` into the `$DOT_FILES` directory
+Both of these aliases also set git's `status.showUntrackedFiles` to `no`. This prevents every file in `$DOT_HOME` from showing as "untracked" by git.
 
 ## requirements
 
