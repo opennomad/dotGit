@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 [[ ! "${DOT_FILES}" ]] && echo "NOT setting dotGit aliases, since DOT_FILES not set." && return
 [[ ! "${DOT_HOME}" ]] && echo "NOT setting dotGit aliases, since DOT_HOME not set." && return
 
