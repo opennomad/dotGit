@@ -3,7 +3,10 @@
 [[ ! "${DOT_FILES}" ]] && echo "NOT setting dotGit aliases, since DOT_FILES not set." && return
 [[ ! "${DOT_HOME}" ]] && echo "NOT setting dotGit aliases, since DOT_HOME not set." && return
 
-alias .g='git --git-dir=${DOT_FILES} --work-tree=${DOT_HOME}'
+# the master alias
+alias .git='git --git-dir=${DOT_FILES} --work-tree=${DOT_HOME}'
+# and all the shortcuts
+alias .g='.git'
 alias .ga='.g add'
 alias .gc='.g commit' 
 alias .gco='.g checkout' 
@@ -15,26 +18,31 @@ alias .glo='.g log --oneline --decorate'
 alias .glg='.g log --stat' 
 alias .glgp='.g log --stat --patch'
 
-# shellcheck disable=SC2142,SC215
-alias .ge='_dotgit_ge(){
-  cd ${DOT_HOME}
-  FILE=$( Q="$@"; .g ls-files --full-name |
-    fzf --preview "bat -n --color=always {}" -q "${Q}")
-  [[ "$FILE" ]] && $EDITOR "${FILE}"
-  cd ${OLDPWD}
-}; _dotgit_ge'
-
+# if fzf is installed we can have nice things
+# https://github.com/junegunn/fzf
 if [[ $(command -v fzf) ]]; then
+  # shellcheck disable=SC2142,SC215
+  alias .ge='_dotgit_ge(){
+    cd ${DOT_HOME}
+    .g ls-files --full-name |
+      fzf -0 --bind "enter:execute($EDITOR {})" \
+      --preview "bat -n --color=always {}" \
+      --preview-window "right,60%,<60(down,75%),+{2}/2" \
+      -q "${@:-}"
+    cd ${OLDPWD}
+  }; _dotgit_ge'
+
   # shellcheck disable=SC2142
   alias .gg='_dotgit_gg(){
-  cd ${DOT_HOME}
-  .g grep --full-name --color=always -n "$@" |
-    fzf -0 --ansi -d ":" --bind "enter:execute($EDITOR +{2} {1})" \
-    --preview "bat -n -H {2} --color=always {1}" \
-    --preview-window "right,60%,<60(down,75%),+{2}/2"
-      cd ${OLDPWD}
-    }; _dotgit_gg'
+    cd ${DOT_HOME}
+    .g grep --full-name --color=always -n "$@" |
+      fzf -0 --ansi -d ":" --bind "enter:execute($EDITOR +{2} {1})" \
+      --preview "bat -n -H {2} --color=always {1}" \
+      --preview-window "right,60%,<60(down,75%),+{2}/2"
+        cd ${OLDPWD}
+  }; _dotgit_gg'
 else
+  # simplified grep but no "interactive file select"
   alias .gg='.g grep'
 fi
 
