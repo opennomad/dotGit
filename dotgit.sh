@@ -30,6 +30,7 @@ if [[ $(command -v fzf) ]]; then
       --preview-window "right,60%,<60(down,75%),+{2}/2" \
       -q "${@:-}"
     cd ${OLDPWD}
+    unset -f _dotgit_ge;
   }; _dotgit_ge'
 
   # shellcheck disable=SC2142
@@ -40,6 +41,7 @@ if [[ $(command -v fzf) ]]; then
       --preview "bat -n -H {2} --color=always {1}" \
       --preview-window "right,60%,<60(down,75%),+{2}/2"
         cd ${OLDPWD}
+    unset -f _dotgit_gg;
   }; _dotgit_gg'
 else
   # simplified grep but no "interactive file select"
