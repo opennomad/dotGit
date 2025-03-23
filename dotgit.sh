@@ -21,28 +21,30 @@ alias .glgp='.g log --stat --patch'
 # if fzf is installed we can have nice things
 # https://github.com/junegunn/fzf
 if [[ $(command -v fzf) ]]; then
-  # shellcheck disable=SC2142,SC215
-  alias .ge='_dotgit_ge(){
-    cd ${DOT_HOME}
-    .g ls-files --full-name |
-      fzf -0 --bind "enter:execute($EDITOR {})" \
-      --preview "bat -n --color=always {}" \
-      --preview-window "right,60%,<60(down,75%),+{2}/2" \
-      -q "${@:-}"
-    cd ${OLDPWD}
-    unset -f _dotgit_ge;
-  }; _dotgit_ge'
-
-  # shellcheck disable=SC2142
-  alias .gg='_dotgit_gg(){
-    cd ${DOT_HOME}
-    .g grep --full-name --color=always -n "$@" |
-      fzf -0 --ansi -d ":" --bind "enter:execute($EDITOR +{2} {1})" \
-      --preview "bat -n -H {2} --color=always {1}" \
-      --preview-window "right,60%,<60(down,75%),+{2}/2"
-        cd ${OLDPWD}
-    unset -f _dotgit_gg;
-  }; _dotgit_gg'
+  fzf_opts=(--preview "bat -n --color=always {}"
+    --multi --ansi -0 
+    --preview-window "right,60%,<60(down,75%),+{2}/2"
+    --bind 'ctrl-z:ignore'
+  )
+  _dotgit_ge() {
+    files=$(cd "$DOT_HOME" && .g ls-files --full-name |
+      fzf "${fzf_opts[@]}" \
+      --preview "bat --color=always {1}" \
+      --bind "enter:accept-non-empty" \
+      -q "${@:-}" | paste -sd' ')
+    [[ -n "$files" ]] && sh -c "cd $DOT_HOME && $EDITOR $files"
+  }
+  alias .ge='_dotgit_ge'
+ 
+  _dotgit_gg() {
+    files=$(cd "$DOT_HOME" && .g grep --full-name --color=always -n "$@" |
+      fzf "${fzf_opts[@]}" -d ":" \
+        --preview "bat --color=always -H{2} {1}" \
+        --accept-nth "-c 'e {1}|{2}'" | paste -sd' ')
+    [[ -n "$files" ]] && sh -c "cd $DOT_HOME && $EDITOR $files"
+  }
+  # shellcheck disable=SC2154
+  alias .gg='_dotgit_gg' # | read -r f; echo $f'
 else
   # simplified grep but no "interactive file select"
   alias .gg='.g grep'
