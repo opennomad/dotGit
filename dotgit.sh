@@ -3,7 +3,7 @@
 [[ ! "$DOT_FILES" ]] && echo "NOT setting dotgit aliases, since DOT_FILES not set." && return
 [[ ! "$DOT_HOME" ]] && echo "NOT setting dotgit aliases, since DOT_HOME not set." && return
 
-[[ -n "$DEBUG" ]] && echo loading dotGit aliases
+[[ -n "$DEBUG" ]] && echo loading dotgit aliases
 
 [[ -z "$DOTGIT_MULTI_LIMIT" ]] && DOTGIT_MULTI_LIMIT=2
 [[ -z "$DOTGIT_MULTI_ACCEPT" ]] && DOTGIT_MULTI_ACCEPT='{1}'
@@ -48,16 +48,23 @@ else
 fi
 # if lazygit or gitui are avaiable, we set up a .lazygit and .gitui
 [[ $(command -v lazygit) ]] &&
-  alias .lazygit='lazygit -g ${DOT_FILES}/.dotfiles/ -w ${DOT_HOME}'
+  alias .lazygit='lazygit -g ${DOT_FILES}/ -w ${DOT_HOME}'
 [[ $(command -v gitui) ]] &&
-  alias .gitui='gitui -d ${DOT_FILES}/.dotfiles/ -w ${DOT_HOME}'
+  alias .gitui='gitui -d ${DOT_FILES}/ -w ${DOT_HOME}'
 
 # if fzf is installed we can have nice things
 # https://github.com/junegunn/fzf
+read -r -d '' FZF_HEADER<<EOF
+[enter] open/edit   [ctrl-/] toggle preview   [ctrl-w] toggle wrap
+EOF
+
 if [[ $(command -v fzf) ]]; then
   fzf_opts=(--multi="$DOTGIT_MULTI_LIMIT" --ansi -0 
     --preview-window "right,60%,<60(down,75%),+{2}/2"
+    --header "$FZF_HEADER"
     --bind 'ctrl-z:ignore'
+    --bind 'ctrl-/:toggle-preview'
+    --bind 'ctrl-w:toggle-preview-wrap'
   )
   _dotgit_ge() {
     local gitdir
@@ -88,77 +95,12 @@ else
   alias .gg='.git grep'
 fi
 
-[[ -n "$DEBUG" ]] && echo dotGit aliases loaded
+[[ -n "$DEBUG" ]] && echo dotgit aliases loaded
 
-if [[ "$DOTGIT_ANYGIT" == 'yes' ]]; then
-  [[ -n "$DEBUG" ]] && echo loading anyGit aliases
-
-  alias ga='git add'
-  alias gba='git branch --all'
-  alias gbd='git branch --delete'
-  alias gbD='git branch --delete --force'
-  alias gb='git branch'
-  alias gbl='git blame -w'
-  alias gc='git commit'
-  alias gclean='git clean --interactive -d'
-  alias gclone='git clone'
-  alias gcm='git commit --message'
-  alias gco='git checkout'
-  alias gcpa='git cherry-pick --abort'
-  alias gcpc='git cherry-pick --continue'
-  alias gcp='git cherry-pick'
-  alias gd='git diff'
-  alias ge=_dotgit_ge
-  alias gg=_dotgit_gg
-  alias ginit='git init'
-  alias glg='git log --stat'
-  alias gl='git pull'
-  alias glgp='git log --stat --patch'
-  alias glo='git log --oneline --decorate'
-  alias gma='git merge --abort'
-  alias gmc='git merge --continue'
-  alias gm='git merge'
-  alias gp='git push'
-  alias grt='git rev-parse --show-toplevel'
-  alias gss='git status --short'
-
-  # if fzf is installed we can have nice things
-  # https://github.com/junegunn/fzf
-  if [[ $(command -v fzf) ]]; then
-    fzf_opts=(--multi="$DOTGIT_MULTI_LIMIT" --ansi -0 
-      --preview-window "right,60%,<60(down,75%),+{2}/2"
-      --header '<tab> to mark more than one file | <enter> to open file(s) in editor'
-      --bind 'ctrl-z:ignore'
-      --bind 'ctrl-w:toggle-wrap'
-    )
-    _anygit_ge() {
-      local gitdir
-      gitdir=$(git rev-parse --show-toplevel)
-      local files
-      files=$(cd "$gitdir" && git ls-files --full-name |
-        fzf "${fzf_opts[@]}" \
-          --preview "$DOTGIT_PREVIEW {1}" \
-          --bind "enter:accept-non-empty" \
-          -q "${@:-}" | paste -sd' ')
-      [[ -n "$files" ]] && sh -c "cd \"$gitdir\" && \"$EDITOR\" $files"
-    }
-    alias ge='_anygit_ge'
-   
-    _anygit_gg() {
-      local gitdir
-      gitdir=$(git rev-parse --show-toplevel)
-      local files
-      files=$(cd "$gitdir" && git grep --full-name --color=always -n "$@" |
-        fzf "${fzf_opts[@]}" -d ":" \
-        --preview "$DOTGIT_PREVIEW -H{2} {1}" \
-        --accept-nth "$DOTGIT_MULTI_ACCEPT" | paste -sd' ')
-
-      [[ -n "$files" ]] && sh -c "cd \"$gitdir\" && \"$EDITOR\" $files"
-    }
-    alias gg='_anygit_gg' # | read -r f; echo $f'
-  else
-    # simplified grep but no "interactive file select"
-    alias gg='git grep'
-  fi
-  [[ -n "$DEBUG" ]] && echo anyGit aliases loaded
-fi
+# and to make general aliases availalbe, we source this file again, but set
+# the aliases by removing the leading `.` and changing all instances of the
+# string 'dotgit' to 'anygit'
+# shellcheck source=/dev/null
+# the line above makes the source below not complain
+[[ "$DOTGIT_ANYGIT" == 'yes' ]] && \
+  sed '/alias \.g.*DOT_FILES/d; s/\.g/g/g; s/dotgit/anygit/g' < "$0" | source /dev/stdin  
