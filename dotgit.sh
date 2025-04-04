@@ -11,6 +11,8 @@
 
 # the master alias
 alias .git='git --git-dir=${DOT_FILES} --work-tree=${DOT_HOME}'
+# the short one
+alias .g='.git'
 
 # and all the shortcuts
 alias .ga='.git add'
@@ -21,20 +23,20 @@ alias .gss='.git status --short'
 alias .glo='.git log --oneline --decorate' 
 alias .glg='.git log --stat' 
 alias .glgp='.git log --stat --patch'
-alias .gbl='git blame -w'
-alias .gb='git branch'
-alias .gba='git branch --all'
-alias .gbd='git branch --delete'
-alias .gbD='git branch --delete --force'
-alias .gm='git merge'
-alias .gma='git merge --abort'
-alias .gmc='git merge --continue'
-alias .gc!='git commit --verbose --amend'
-alias .gcm='git commit --message'
-alias .gcp='git cherry-pick'
-alias .gcpa='git cherry-pick --abort'
-alias .gcpc='git cherry-pick --continue'
-alias .gclean='git clean --interactive -d'
+alias .gbl='.git blame -w'
+alias .gb='.git branch'
+alias .gba='.git branch --all'
+alias .gbd='.git branch --delete'
+alias .gbD='.git branch --delete --force'
+alias .gm='.git merge'
+alias .gma='.git merge --abort'
+alias .gmc='.git merge --continue'
+alias .gc!='.git commit --verbose --amend'
+alias .gcm='.git commit --message'
+alias .gcp='.git cherry-pick'
+alias .gcpa='.git cherry-pick --abort'
+alias .gcpc='.git cherry-pick --continue'
+alias .gclean='.git clean --interactive -d'
 alias .ginit='git init --bare "${DOT_FILES}"; .git config --local status.showUntrackedFiles no'
 # only set up push and pull if DOT_ORIGIN is set
 if [[ -n "$DOT_ORIGIN" ]]; then
