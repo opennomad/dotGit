@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-[[ ! "$DOT_FILES" ]] && echo "NOT setting dotgit aliases, since DOT_FILES not set." && return
+[[ ! "$DOT_REPO" ]] && echo "NOT setting dotgit aliases, since DOT_REPO not set." && return
 [[ ! "$DOT_HOME" ]] && echo "NOT setting dotgit aliases, since DOT_HOME not set." && return
 
 [[ -n "$DEBUG" ]] && echo loading dotgit aliases
@@ -10,7 +10,7 @@
 [[ -z "$DOTGIT_PREVIEW" ]] && DOTGIT_PREVIEW='bat -p --color=always'
 
 # the master alias
-alias .git='git --git-dir=${DOT_FILES} --work-tree=${DOT_HOME}'
+alias .git='git --git-dir=${DOT_REPO} --work-tree=${DOT_HOME}'
 # the short one
 alias .g='.git'
 
@@ -37,22 +37,22 @@ alias .gcp='.git cherry-pick'
 alias .gcpa='.git cherry-pick --abort'
 alias .gcpc='.git cherry-pick --continue'
 alias .gclean='.git clean --interactive -d'
-alias .ginit='git init --bare "${DOT_FILES}"; .git config --local status.showUntrackedFiles no'
+alias .ginit='git init --bare "${DOT_REPO}"; .git config --local status.showUntrackedFiles no'
 # only set up push and pull if DOT_ORIGIN is set
 if [[ -n "$DOT_ORIGIN" ]]; then
   alias .gp='.git push'
   alias .gl='.git pull'
-  alias .gclone='git clone --bare "${DOT_ORIGIN}" "${DOT_FILES}"; .git config --local status.showUntrackedFiles no'
+  alias .gclone='git clone --bare "${DOT_ORIGIN}" "${DOT_REPO}"; .git config --local status.showUntrackedFiles no'
 else
-  alias .gp='echo "error: must first configure DOT_HOME"'
-  alias .gl='echo "error: must first configure DOT_HOME"'
-  alias .gclone='echo "error: must first configure DOT_HOME"'
+  alias .gp='echo "error: must first configure DOT_ORIGIN"'
+  alias .gl='echo "error: must first configure DOT_ORIGIN"'
+  alias .gclone='echo "error: must first configure DOT_ORIGIN"'
 fi
-# if lazygit or gitui are avaiable, we set up a .lazygit and .gitui
+# if lazygit or gitui are available, we set up a .lazygit and .gitui
 [[ $(command -v lazygit) ]] &&
-  alias .lazygit='lazygit -g ${DOT_FILES}/ -w ${DOT_HOME}'
+  alias .lazygit='lazygit -g ${DOT_REPO}/ -w ${DOT_HOME}'
 [[ $(command -v gitui) ]] &&
-  alias .gitui='gitui -d ${DOT_FILES}/ -w ${DOT_HOME}'
+  alias .gitui='gitui -d ${DOT_REPO}/ -w ${DOT_HOME}'
 
 # if fzf is installed we can have nice things
 # https://github.com/junegunn/fzf
@@ -99,10 +99,10 @@ fi
 
 [[ -n "$DEBUG" ]] && echo dotgit aliases loaded
 
-# and to make general aliases availalbe, we source this file again, but set
+# and to make general aliases available, we source this file again, but set
 # the aliases by removing the leading `.` and changing all instances of the
 # string 'dotgit' to 'anygit'
 # shellcheck source=/dev/null
 # the line above makes the source below not complain
 [[ "$DOTGIT_ANYGIT" == 'yes' ]] && \
-  sed '/alias \.g.*DOT_FILES/d; s/\.g/g/g; s/dotgit/anygit/g' < "$0" | source /dev/stdin  
+  sed '/alias \.g.*DOT_REPO/d; s/\.g/g/g; s/dotgit/anygit/g' < "$0" | source /dev/stdin  
