@@ -1,6 +1,11 @@
 # dotGit ::: 🪄 dotfiles + 🧸 bare git repo + 🐚 shell aliases
+### a minimal and effective approach to dotfiles (and git repos)
 
-Your dotfiles are scattered across `$HOME`. You can't remember which file sets `PATH`, or where you defined that alias three months ago. `.gg PATH` greps across every tracked dotfile and drops you straight to the line. `.ge` fuzzy-finds any file by name with a live preview. Under the hood it's a [bare git repo](https://news.ycombinator.com/item?id=11070797), so files stay exactly where tools expect them and everything else is standard git.
+[![ShellCheck](https://code.opennomad.com/opennomad/dotGit/actions/workflows/shellcheck.yml/badge.svg)](https://code.opennomad.com/opennomad/dotGit/actions?workflow=shellcheck.yml)
+
+Dotfiles are scattered across `$HOME`. Can't remember where you set the `PATH`, or where you defined that alias three months ago? `.gg PATH` greps across every tracked dotfile and drops you straight to the line. `.ge` fuzzy-finds any file by name with a live preview. Under the hood it's a [bare git repo](https://news.ycombinator.com/item?id=11070797), so files stay exactly where tools expect them and everything else is standard git behind some aliases.
+
+Bonus: set `DOTGIT_ANYGIT=yes` and the same gg/ge aliases (without the leading dot) work across all your repos.
 
 ![dotGit demo](demo/demo.gif)
 
@@ -141,7 +146,7 @@ Everything else is a standard git alias pointed at the dotfiles repo.
 
 ### ANYGIT
 
-Setting `DOTGIT_ANYGIT=yes` causes dotGit to source a transformed copy of itself that registers a parallel set of aliases without the leading `.` — so `.ga` becomes `ga`, `.gc` becomes `gc`, etc. These work against whichever git repo your shell is currently in, like ordinary git aliases.
+Setting `DOTGIT_ANYGIT=yes` causes dotGit to source a transformed copy of itself that registers a parallel set of aliases without the leading `.` — so `.ga` becomes `ga`, `.gc` becomes `gc`, etc. These work against whichever git repo your shell is currently in, like ordinary git aliases. Yes, `ge` and `gg` are included.
 
 ## initial clone cleanup
 
