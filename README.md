@@ -3,7 +3,13 @@
 
 [![ShellCheck](https://code.opennomad.com/opennomad/dotGit/actions/workflows/shellcheck.yml/badge.svg)](https://code.opennomad.com/opennomad/dotGit/actions?workflow=shellcheck.yml)
 
-Dotfiles are scattered across `$HOME`. Can't remember where you set the `PATH`, or where you defined that alias three months ago? `.gg PATH` greps across every tracked dotfile and drops you straight to the line. `.ge` fuzzy-finds any file by name with a live preview. Under the hood it's a [bare git repo](https://news.ycombinator.com/item?id=11070797), so files stay exactly where tools expect them and everything else is standard git behind some aliases.
+Dotfiles are scattered across `$HOME`. Can't remember where you set the `PATH`, or where you defined that alias three months ago?
+
+`.gg PATH` greps across every tracked dotfile and drops you straight to the line.
+
+`.ge` fuzzy-finds any file by name with a live preview.
+
+Under the hood it's a [bare git repo](https://news.ycombinator.com/item?id=11070797), so files stay exactly where tools expect them and everything else is standard git behind some aliases.
 
 Bonus: set `DOTGIT_ANYGIT=yes` and the same gg/ge aliases (without the leading dot) work across all your repos.
 
