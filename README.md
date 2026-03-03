@@ -2,6 +2,7 @@
 ### a minimal and effective approach to dotfiles (and git repos)
 
 [![ShellCheck](https://code.opennomad.com/opennomad/dotGit/actions/workflows/shellcheck.yml/badge.svg)](https://code.opennomad.com/opennomad/dotGit/actions?workflow=shellcheck.yml)
+
 mirrors: [Codeberg](https://codeberg.org/opennomad/dotGit) · [GitHub](https://github.com/opennomad/dotGit)
 
 Dotfiles are scattered across `$HOME`. Can't remember where you set the `PATH`, or where you defined that alias three months ago?
