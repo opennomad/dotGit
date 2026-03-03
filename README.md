@@ -58,7 +58,7 @@ The real daily winners for me are the "edit" (`.ge`) and "grep" (`.gg`) aliases.
 | .gd | `.git diff` | |
 | .gds | `.git diff --stat` | |
 | .ge | calls the `_dotgit_ge` helper function | the dotGit edit feature [^fzf] |
-| .gg | calls the `_dotgit_gg` helper function (falls back to `.git grep` without fzf) | grep your dotfiles; line-jumping requires customizing `DOTGIT_MULTI_ACCEPT` [^line] |
+| .gg | calls the `_dotgit_gg` helper function (falls back to `.git grep` without fzf) | grep your dotfiles and open at the matched line [^line] |
 | .gss | `.git status --short` | |
 | .glo | `.git log --oneline --decorate`  | |
 | .glg | `.git log --stat`  | |
@@ -84,7 +84,7 @@ The real daily winners for me are the "edit" (`.ge`) and "grep" (`.gg`) aliases.
 | .gclone | `git clone --bare "${DOT_ORIGIN}" "${DOT_REPO}"; .git config --local status.showUntrackedFiles no` | [^untracked] |
 | .ginit | `git init --bare "${DOT_REPO}"; .git config --local status.showUntrackedFiles no`   |   |
 
-[^line]: Set `DOTGIT_MULTI_ACCEPT` to the format your editor expects, e.g. `+{2} {1}` for vim/neovim or `{1}:{2}` for editors that accept `file:line`. Works with vi, emacs, nano, micro, and any editor that accepts a line number argument.
+[^line]: Opens the editor with `+line file` arguments. Works with vi, emacs, nano, micro, and any editor that accepts a line number via `+N`.
 [^untracked]: Also set git's `status.showUntrackedFiles` to `no`. This prevents every file in `$DOT_HOME` from showing as "untracked" by git.
 [^fzf]: requires [FZF](https://github.com/junegunn/fzf)
 
@@ -123,7 +123,7 @@ The real daily winners for me are the "edit" (`.ge`) and "grep" (`.gg`) aliases.
 | `DOT_ORIGIN` | *(unset)* | remote URL; enables `.gp`, `.gl`, and `.gclone` |
 | `DOTGIT_PREVIEW` | `bat -p --color=always` | fzf preview command |
 | `DOTGIT_MULTI_LIMIT` | `5` | max files selectable at once in `.ge` and `.gg` |
-| `DOTGIT_MULTI_ACCEPT` | `{1}` | fzf field spec accepted on selection (e.g. `{1}:{2}` for file:line) |
+| `DOTGIT_OPEN_FMT` | `split` | how `.gg` passes file+line to the editor; `split` uses `+line file` (works with most editors); set to `+e {file}\|{line}` for vim/nvim multi-file line jumping |
 | `DOTGIT_ANYGIT` | *(unset)* | set to `yes` to also load unprefixed `g*` aliases for any git repo |
 | `DEBUG` | *(unset)* | set to any value to print load/unload messages |
 

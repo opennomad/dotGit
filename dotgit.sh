@@ -6,8 +6,8 @@
 [[ -n "$DEBUG" ]] && echo loading dotgit aliases
 
 [[ -z "$DOTGIT_MULTI_LIMIT" ]] && DOTGIT_MULTI_LIMIT=5
-[[ -z "$DOTGIT_MULTI_ACCEPT" ]] && DOTGIT_MULTI_ACCEPT='{1}'
 [[ -z "$DOTGIT_PREVIEW" ]] && DOTGIT_PREVIEW='bat -p --color=always'
+[[ -z "$DOTGIT_OPEN_FMT" ]] && DOTGIT_OPEN_FMT='split'  # or e.g. '+e {file}|{line}' for nvim
 
 # the master alias
 alias .git='git --git-dir=${DOT_REPO} --work-tree=${DOT_HOME}'
@@ -84,16 +84,26 @@ EOF
   alias .ge='_dotgit_ge'
 
   _dotgit_gg() {
-    local gitdir result
-    local -a files
+    local gitdir result clean fname lnum
+    local -a editor_args
     gitdir=$(.git rev-parse --show-toplevel)
     result=$(cd "$gitdir" && .git grep --full-name --color=always -n "$@" |
       fzf "${fzf_opts[@]}" -d ":" \
-        --preview "$DOTGIT_PREVIEW -H{2} {1}" \
-        --accept-nth "$DOTGIT_MULTI_ACCEPT")
+        --preview "$DOTGIT_PREVIEW -H{2} {1}")
     [[ -z "$result" ]] && return
-    while IFS= read -r line; do files+=("$line"); done <<< "$result"
-    (cd "$gitdir" && "$EDITOR" "${files[@]}")
+    while IFS= read -r line; do
+      clean=$(printf '%s' "$line" | sed 's/\x1b\[[0-9;]*[A-Za-z]//g')
+      [[ -z "$clean" ]] && continue
+      fname="${clean%%:*}"
+      lnum="${clean#*:}"; lnum="${lnum%%:*}"
+      if [[ "$DOTGIT_OPEN_FMT" == 'split' ]]; then
+        editor_args+=("+$lnum" "$fname")
+      else
+        local arg="${DOTGIT_OPEN_FMT//\{file\}/$fname}"
+        editor_args+=("${arg//\{line\}/$lnum}")
+      fi
+    done <<< "$result"
+    [[ ${#editor_args[@]} -gt 0 ]] && (cd "$gitdir" && "$EDITOR" "${editor_args[@]}")
   }
   alias .gg='_dotgit_gg'
 else
