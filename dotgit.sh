@@ -5,7 +5,7 @@
 
 [[ -n "$DEBUG" ]] && echo loading dotgit aliases
 
-[[ -z "$DOTGIT_MULTI_LIMIT" ]] && DOTGIT_MULTI_LIMIT=2
+[[ -z "$DOTGIT_MULTI_LIMIT" ]] && DOTGIT_MULTI_LIMIT=5
 [[ -z "$DOTGIT_MULTI_ACCEPT" ]] && DOTGIT_MULTI_ACCEPT='{1}'
 [[ -z "$DOTGIT_PREVIEW" ]] && DOTGIT_PREVIEW='bat -p --color=always'
 
@@ -19,6 +19,7 @@ alias .ga='.git add'
 alias .gc='.git commit' 
 alias .gco='.git checkout' 
 alias .gd='.git diff'
+alias .gds='.git diff --stat'
 alias .gss='.git status --short'
 alias .glo='.git log --oneline --decorate' 
 alias .glg='.git log --stat' 
@@ -56,12 +57,11 @@ fi
 
 # if fzf is installed we can have nice things
 # https://github.com/junegunn/fzf
-read -r -d '' FZF_HEADER<<EOF
+if [[ $(command -v fzf) ]]; then
+  read -r -d '' FZF_HEADER<<EOF
 [enter] open/edit   [ctrl-/] toggle preview   [ctrl-w] toggle wrap
 EOF
-
-if [[ $(command -v fzf) ]]; then
-  fzf_opts=(--multi="$DOTGIT_MULTI_LIMIT" --ansi -0 
+  fzf_opts=(--multi="$DOTGIT_MULTI_LIMIT" --ansi -0
     --preview-window "right,60%,<60(down,75%),+{2}/2"
     --header "$FZF_HEADER"
     --bind 'ctrl-z:ignore'
@@ -69,27 +69,31 @@ if [[ $(command -v fzf) ]]; then
     --bind 'ctrl-w:toggle-preview-wrap'
   )
   _dotgit_ge() {
-    local gitdir
-    local files
+    local gitdir result
+    local -a files
     gitdir=$(.git rev-parse --show-toplevel)
-    files=$(cd "$gitdir" && .git ls-files --full-name |
+    result=$(cd "$gitdir" && .git ls-files --full-name |
       fzf "${fzf_opts[@]}" \
         --preview "$DOTGIT_PREVIEW {1}" \
         --bind "enter:accept-non-empty" \
-        -q "${@:-}" | paste -sd' ')
-    [[ -n "$files" ]] && sh -c "cd \"$gitdir\" && \"$EDITOR\" $files"
+        -q "${@:-}")
+    [[ -z "$result" ]] && return
+    while IFS= read -r line; do files+=("$line"); done <<< "$result"
+    (cd "$gitdir" && "$EDITOR" "${files[@]}")
   }
   alias .ge='_dotgit_ge'
- 
+
   _dotgit_gg() {
-    local gitdir
-    local files
+    local gitdir result
+    local -a files
     gitdir=$(.git rev-parse --show-toplevel)
-    files=$(cd "$gitdir" && .git grep --full-name --color=always -n "$@" |
+    result=$(cd "$gitdir" && .git grep --full-name --color=always -n "$@" |
       fzf "${fzf_opts[@]}" -d ":" \
         --preview "$DOTGIT_PREVIEW -H{2} {1}" \
-        --accept-nth "$DOTGIT_MULTI_ACCEPT" | paste -sd' ')
-    [[ -n "$files" ]] && sh -c "cd \"$gitdir\" && \"$EDITOR\" $files"
+        --accept-nth "$DOTGIT_MULTI_ACCEPT")
+    [[ -z "$result" ]] && return
+    while IFS= read -r line; do files+=("$line"); done <<< "$result"
+    (cd "$gitdir" && "$EDITOR" "${files[@]}")
   }
   alias .gg='_dotgit_gg'
 else
@@ -105,4 +109,4 @@ fi
 # shellcheck source=/dev/null
 # the line above makes the source below not complain
 [[ "$DOTGIT_ANYGIT" == 'yes' ]] && \
-  sed '/alias \.g.*DOT_REPO/d; s/\.g/g/g; s/dotgit/anygit/g' < "$0" | source /dev/stdin  
+  sed '/alias \.g.*DOT_REPO/d; s/\.g/g/g; s/dotgit/anygit/g' < "${BASH_SOURCE[0]:-$0}" | source /dev/stdin

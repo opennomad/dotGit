@@ -8,6 +8,28 @@ dotGit has modest aims:
 - 🚀 reduce friction and make configuration changes quick and convenient
 
 
+## TL;DR
+
+```bash
+# 1. in your .zshrc or .bashrc:
+export DOT_REPO="${HOME}/.dotfiles"
+export DOT_HOME="${HOME}"
+export DOT_ORIGIN="git@github.com:user/dotfiles.git"  # optional
+source /path/to/dotgit.sh
+
+# 2. initialize a new repo, or clone an existing one
+.ginit        # new repo
+.gclone       # clone from DOT_ORIGIN
+
+# 3. daily use
+.ge zshrc     # fuzzy-find and edit files matching "zshrc"
+.gg PATH      # grep across dotfiles, jump to result
+.gss          # status
+.ga .zshrc    # stage a file
+.gc -m 'msg'  # commit
+.gp           # push
+```
+
 ## usage
 
 Most of dotGit is just some aliases that point to the `--git-dir` and `--work-tree`.
@@ -20,8 +42,8 @@ The real daily winners for me are the "edit" (`.ge`) and "grep" (`.gg`) aliases.
 2. make some changes. Try:
     - `.ge zshrc` - presents all files with `zshrc` in the name
     - `.gg PATH` - runs `git grep` across your dotfiles and presents the results
-4. `.gc -m 'commit comment' .zshrc` - will commit the changes
-5. `.gp` - pushes the changes to the origin
+3. `.gc -m 'commit comment' .zshrc` - will commit the changes
+4. `.gp` - pushes the changes to the origin
 
 ### a list of all aliases defined
 
@@ -34,8 +56,9 @@ The real daily winners for me are the "edit" (`.ge`) and "grep" (`.gg`) aliases.
 | .gc | `.git commit`  | |
 | .gco | `.git checkout`  | |
 | .gd | `.git diff` | |
+| .gds | `.git diff --stat` | |
 | .ge | calls the `_dotgit_ge` helper function | the dotGit edit feature [^fzf] |
-| .gg | calls the `_dotgit_gg` helper function | grep your dotfiles, and jump to correct line [^line] |
+| .gg | calls the `_dotgit_gg` helper function (falls back to `.git grep` without fzf) | grep your dotfiles; line-jumping requires customizing `DOTGIT_MULTI_ACCEPT` [^line] |
 | .gss | `.git status --short` | |
 | .glo | `.git log --oneline --decorate`  | |
 | .glg | `.git log --stat`  | |
@@ -48,20 +71,20 @@ The real daily winners for me are the "edit" (`.ge`) and "grep" (`.gg`) aliases.
 | .gm | `.git merge` | |
 | .gma | `.git merge --abort` | |
 | .gmc | `.git merge --continue` | |
-| .gc! | `.git commit --verbose --amend` | 
+| .gc! | `.git commit --verbose --amend` | |
 | .gcm | `.git commit --message` | |
 | .gcp | `.git cherry-pick` | |
 | .gcpa | `.git cherry-pick --abort` | |
 | .gcpc | `.git cherry-pick --continue` | |
 | .gclean | `.git clean --interactive -d` | |
-| .ginit | `git init --bare "${DOT_REPO}"; .git config --local status.showUntrackedFiles no` | [^untracked] |
 | .gp | `.git push` | requires `DOT_ORIGIN` be set |
-| .gl | `.git pull` | requires `DOT_ORIGIN` be set 
-| .gclone | `git clone --bare "${DOT_ORIGIN}" "${DOT_REPO}"; .git config --local status.showUntrackedFiles no` | |
+| .gl | `.git pull` | requires `DOT_ORIGIN` be set |
 | .lazygit | `lazygit -g ${DOT_REPO}/ -w ${DOT_HOME}` | requires `lazygit` be installed |
 | .gitui | `gitui -d ${DOT_REPO}/ -w ${DOT_HOME}` | requires gitui to be installed |
+| .gclone | `git clone --bare "${DOT_ORIGIN}" "${DOT_REPO}"; .git config --local status.showUntrackedFiles no` | [^untracked] |
+| .ginit | `git init --bare "${DOT_REPO}"; .git config --local status.showUntrackedFiles no`   |   |
 
-[^line]: This works with vi, emacs, nano, micro, and any editor that accepts the line number to open the file to.
+[^line]: Set `DOTGIT_MULTI_ACCEPT` to the format your editor expects, e.g. `+{2} {1}` for vim/neovim or `{1}:{2}` for editors that accept `file:line`. Works with vi, emacs, nano, micro, and any editor that accepts a line number argument.
 [^untracked]: Also set git's `status.showUntrackedFiles` to `no`. This prevents every file in `$DOT_HOME` from showing as "untracked" by git.
 [^fzf]: requires [FZF](https://github.com/junegunn/fzf)
 
@@ -69,7 +92,7 @@ The real daily winners for me are the "edit" (`.ge`) and "grep" (`.gg`) aliases.
 
 - `EDITOR` set to your liking 
 - [git](https://git-scm.com/)
-- [bat](https://github.com/sharkdp/bat)
+- [bat](https://github.com/sharkdp/bat) (optional, default preview command)
 - [fzf](https://github.com/junegunn/fzf) (optional)
 - [lazygit](https://github.com/jesseduffield/lazygit) (optional)
 - [gitui](https://github.com/extrawurst/gitui) (optional)
@@ -82,12 +105,31 @@ The real daily winners for me are the "edit" (`.ge`) and "grep" (`.gg`) aliases.
   export DOT_REPO="${HOME}/.dotfiles"   # this is where the repo will live
   export DOT_HOME="${HOME}"             # this is generally the same as `$HOME`
   export DOT_ORIGIN="git@github.com:user/your-dotfiles-repo.git"   # optional
-  source <path to dotGit.sh>`
+  source <path to dotGit.sh>
   ```
 3. restart your shell or `source ~/.zshrc` or `source ~/.bashrc`
-4. run `.ginit` or `.gclone` (see the *initial clone setup* below, if cloning)
-5. `.gc <branch>` to checkout the config files
+4. run `.ginit` to start a new repo, or `.gclone` to clone an existing one
+    - if cloning: `.gco <branch>` to checkout your config files (see *initial clone cleanup* below if files conflict)
+    - if initializing: start tracking files with `.ga`
 
+## configuration
+
+`DOT_REPO` and `DOT_HOME` must be set before sourcing `dotgit.sh`. All other variables are optional.
+
+| variable | default | description |
+| --- | --- | --- |
+| `DOT_REPO` | *(required)* | path to the bare git repository |
+| `DOT_HOME` | *(required)* | work tree root, usually `$HOME` |
+| `DOT_ORIGIN` | *(unset)* | remote URL; enables `.gp`, `.gl`, and `.gclone` |
+| `DOTGIT_PREVIEW` | `bat -p --color=always` | fzf preview command |
+| `DOTGIT_MULTI_LIMIT` | `5` | max files selectable at once in `.ge` and `.gg` |
+| `DOTGIT_MULTI_ACCEPT` | `{1}` | fzf field spec accepted on selection (e.g. `{1}:{2}` for file:line) |
+| `DOTGIT_ANYGIT` | *(unset)* | set to `yes` to also load unprefixed `g*` aliases for any git repo |
+| `DEBUG` | *(unset)* | set to any value to print load/unload messages |
+
+### ANYGIT
+
+Setting `DOTGIT_ANYGIT=yes` causes dotGit to source a transformed copy of itself that registers a parallel set of aliases without the leading `.` — so `.ga` becomes `ga`, `.gc` becomes `gc`, etc. These work against whichever git repo your shell is currently in, like ordinary git aliases.
 
 ## initial clone cleanup
 
