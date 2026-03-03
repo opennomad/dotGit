@@ -1,4 +1,5 @@
 # dotGit ::: 🪄 dotfiles + 🧸 bare git repo + 🐚 shell aliases
+## a minimal and effective approach to dotfiles (and git repos)
 
 Your dotfiles are scattered across `$HOME`. You can't remember which file sets `PATH`, or where you defined that alias three months ago. `.gg PATH` greps across every tracked dotfile and drops you straight to the line. `.ge` fuzzy-finds any file by name with a live preview. Under the hood it's a [bare git repo](https://news.ycombinator.com/item?id=11070797), so files stay exactly where tools expect them and everything else is standard git.
 
