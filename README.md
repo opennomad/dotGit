@@ -1,12 +1,8 @@
-# dotGit ::: 🪄 dotfiles +  🧸 bare git repo + 🐚 shell aliases
+# dotGit ::: 🪄 dotfiles + 🧸 bare git repo + 🐚 shell aliases
 
-There are a lot of ways to manage your dotfiles. dotGit implements an idea that has been floating around on the internet for a while: a bare git repo for storing your dotfiles. A quick search finds [this post](https://news.ycombinator.com/item?id=11070797), but there may be older sources. dotGit combines this with some convenient shell aliases, a couple of functions, and FZF's matching magic to track your dotfiles files with ease.
+Your dotfiles are scattered across `$HOME`. You can't remember which file sets `PATH`, or where you defined that alias three months ago. `.gg PATH` greps across every tracked dotfile and drops you straight to the line. `.ge` fuzzy-finds any file by name with a live preview. Under the hood it's a [bare git repo](https://news.ycombinator.com/item?id=11070797), so files stay exactly where tools expect them and everything else is standard git.
 
-dotGit has modest aims:
-- 🏡 keep configuration files where tools expect them in `$HOME`
-- 🐚 stay as light and close to git and the shell as possible
-- 🚀 reduce friction and make configuration changes quick and convenient
-
+![dotGit demo](demo/demo.gif)
 
 ## TL;DR
 
@@ -32,11 +28,27 @@ source /path/to/dotgit.sh
 
 ## usage
 
-Most of dotGit is just some aliases that point to the `--git-dir` and `--work-tree`.
+### .ge — fuzzy find and edit
 
-The real daily winners for me are the "edit" (`.ge`) and "grep" (`.gg`) aliases. They get me to where I need to be fast.
+`.ge` opens a fuzzy file finder across all tracked dotfiles. Type to narrow by filename, and get a live syntax-highlighted preview of each file on the right. Select one or more files and they open in `$EDITOR`.
 
-### a normal workflow for making configuration changes 
+```
+.ge            # browse all dotfiles
+.ge zsh        # pre-filter to files with "zsh" in the name
+```
+
+### .gg — grep and jump
+
+`.gg` runs `git grep` across all tracked dotfile contents and presents the matches interactively. Select a result and your editor opens directly at that line.
+
+```
+.gg PATH       # find every place PATH is set or referenced
+.gg 'alias g'  # find all git aliases
+```
+
+Everything else is a standard git alias pointed at the dotfiles repo.
+
+### a normal workflow for making configuration changes
 
 1. `.gl` - pull changes from origin
 2. make some changes. Try:
@@ -57,8 +69,8 @@ The real daily winners for me are the "edit" (`.ge`) and "grep" (`.gg`) aliases.
 | .gco | `.git checkout`  | |
 | .gd | `.git diff` | |
 | .gds | `.git diff --stat` | |
-| .ge | calls the `_dotgit_ge` helper function | the dotGit edit feature [^fzf] |
-| .gg | calls the `_dotgit_gg` helper function (falls back to `.git grep` without fzf) | grep your dotfiles and open at the matched line [^line] |
+| .ge | fuzzy find and edit dotfiles [^fzf] | |
+| .gg | grep dotfiles and open at the matched line [^line] [^fzf] | falls back to `.git grep` without fzf |
 | .gss | `.git status --short` | |
 | .glo | `.git log --oneline --decorate`  | |
 | .glg | `.git log --stat`  | |
@@ -84,7 +96,7 @@ The real daily winners for me are the "edit" (`.ge`) and "grep" (`.gg`) aliases.
 | .gclone | `git clone --bare "${DOT_ORIGIN}" "${DOT_REPO}"; .git config --local status.showUntrackedFiles no` | [^untracked] |
 | .ginit | `git init --bare "${DOT_REPO}"; .git config --local status.showUntrackedFiles no`   |   |
 
-[^line]: Opens the editor with `+line file` arguments. Works with vi, emacs, nano, micro, and any editor that accepts a line number via `+N`.
+[^line]: Opens the editor with `+line file` arguments. Works with vi, emacs, nano, micro, and any editor that accepts `+N`. For vim/nvim multi-file line jumping set `DOTGIT_OPEN_FMT='+e {file}|{line}'` (note: literal `|`, not `\|`).
 [^untracked]: Also set git's `status.showUntrackedFiles` to `no`. This prevents every file in `$DOT_HOME` from showing as "untracked" by git.
 [^fzf]: requires [FZF](https://github.com/junegunn/fzf)
 
