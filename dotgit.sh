@@ -7,7 +7,7 @@
 
 [[ -z "$DOTGIT_MULTI_LIMIT" ]] && DOTGIT_MULTI_LIMIT=5
 [[ -z "$DOTGIT_PREVIEW" ]] && DOTGIT_PREVIEW='bat -p --color=always'
-[[ -z "$DOTGIT_OPEN_FMT" ]] && DOTGIT_OPEN_FMT='split'  # or e.g. '+e {file}|{line}' for nvim
+[[ -z "$DOTGIT_OPEN_FMT" ]] && DOTGIT_OPEN_FMT='split' # or e.g. '+e {file}|{line}' for nvim
 
 # the master alias
 alias .git='git --git-dir=${DOT_REPO} --work-tree=${DOT_HOME}'
@@ -16,13 +16,13 @@ alias .g='.git'
 
 # and all the shortcuts
 alias .ga='.git add'
-alias .gc='.git commit' 
-alias .gco='.git checkout' 
+alias .gc='.git commit'
+alias .gco='.git checkout'
 alias .gd='.git diff'
 alias .gds='.git diff --stat'
 alias .gss='.git status --short'
-alias .glo='.git log --oneline --decorate' 
-alias .glg='.git log --stat' 
+alias .glo='.git log --oneline --decorate'
+alias .glg='.git log --stat'
 alias .glgp='.git log --stat --patch'
 alias .gbl='.git blame -w'
 alias .gb='.git branch'
@@ -51,14 +51,15 @@ else
 fi
 # if lazygit or gitui are available, we set up a .lazygit and .gitui
 [[ $(command -v lazygit) ]] &&
-  alias .lazygit='lazygit -g ${DOT_REPO}/ -w ${DOT_HOME}'
+  alias .lazygit='lazygit -g ${DOT_REPO}/ -w ${DOT_HOME}' &&
+  alias .lg='.lazygit'
 [[ $(command -v gitui) ]] &&
   alias .gitui='gitui -d ${DOT_REPO}/ -w ${DOT_HOME}'
 
 # if fzf is installed we can have nice things
 # https://github.com/junegunn/fzf
 if [[ $(command -v fzf) ]]; then
-  read -r -d '' FZF_HEADER<<EOF
+  read -r -d '' FZF_HEADER <<EOF
 [enter] open/edit   [ctrl-/] toggle preview   [ctrl-w] toggle wrap
 EOF
   fzf_opts=(--multi="$DOTGIT_MULTI_LIMIT" --ansi -0
@@ -78,7 +79,7 @@ EOF
         --bind "enter:accept-non-empty" \
         -q "${@:-}")
     [[ -z "$result" ]] && return
-    while IFS= read -r line; do files+=("$line"); done <<< "$result"
+    while IFS= read -r line; do files+=("$line"); done <<<"$result"
     (cd "$gitdir" && "$EDITOR" "${files[@]}")
   }
   alias .ge='_dotgit_ge'
@@ -95,14 +96,15 @@ EOF
       clean=$(printf '%s' "$line" | sed 's/\x1b\[[0-9;]*[A-Za-z]//g')
       [[ -z "$clean" ]] && continue
       fname="${clean%%:*}"
-      lnum="${clean#*:}"; lnum="${lnum%%:*}"
+      lnum="${clean#*:}"
+      lnum="${lnum%%:*}"
       if [[ "$DOTGIT_OPEN_FMT" == 'split' ]]; then
         editor_args+=("+$lnum" "$fname")
       else
         local arg="${DOTGIT_OPEN_FMT//\{file\}/$fname}"
         editor_args+=("${arg//\{line\}/$lnum}")
       fi
-    done <<< "$result"
+    done <<<"$result"
     [[ ${#editor_args[@]} -gt 0 ]] && (cd "$gitdir" && "$EDITOR" "${editor_args[@]}")
   }
   alias .gg='_dotgit_gg'
@@ -112,11 +114,6 @@ else
 fi
 
 [[ -n "$DEBUG" ]] && echo dotgit aliases loaded
-
-# and to make general aliases available, we source this file again, but set
-# the aliases by removing the leading `.` and changing all instances of the
-# string 'dotgit' to 'anygit'
 # shellcheck source=/dev/null
-# the line above makes the source below not complain
-[[ "$DOTGIT_ANYGIT" == 'yes' ]] && \
-  sed '/alias \.g.*DOT_REPO/d; s/\.g/g/g; s/dotgit/anygit/g' < "${BASH_SOURCE[0]:-$0}" | source /dev/stdin
+[[ "$DOTGIT_ANYGIT" == 'yes' ]] &&
+  sed '/alias \.g.*DOT_REPO/d; s/\.g/g/g; s/dotgit/anygit/g' <"${BASH_SOURCE[0]:-$0}" | source /dev/stdin
