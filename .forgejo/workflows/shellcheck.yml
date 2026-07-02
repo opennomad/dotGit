@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     container: ghcr.io/catthehacker/ubuntu:act-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install ShellCheck
         run: apt-get update && apt-get install -y shellcheck
       - name: Run ShellCheck
