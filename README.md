@@ -1,4 +1,5 @@
-# dotGit ::: 🪄 dotfiles + 🧸 bare git repo + 🐚 shell aliases
+# dotGit ::: 🪄 dotfiles + 🧸 bare git repo + 🐚 some shell
+
 ### a minimal and effective approach to dotfiles (and git repos)
 
 [![ShellCheck](https://code.opennomad.com/opennomad/dotGit/actions/workflows/shellcheck.yml/badge.svg)](https://code.opennomad.com/opennomad/dotGit/actions?workflow=shellcheck.yml)
@@ -11,9 +12,9 @@ Dotfiles are scattered across `$HOME`. Can't remember where you set the `PATH`, 
 
 `.ge` fuzzy-finds any file by name with a live preview.
 
-Under the hood it's a [bare git repo](https://news.ycombinator.com/item?id=11070797), so files stay exactly where tools expect them and everything else is standard git behind some aliases.
+Under the hood it's a [bare git repo](https://news.ycombinator.com/item?id=11070797), so files stay exactly where tools expect them and everything else is standard git behind a shell function.
 
-Bonus: set `DOTGIT_ANYGIT=yes` and the same gg/ge aliases (without the leading dot) work across all your repos.
+Bonus: set `DOTGIT_ANYGIT=yes` and the same gg/ge functionality (without the leading dot) work across all your repos.
 
 ![dotGit demo](demo/demo.gif)
 
@@ -56,10 +57,10 @@ source /path/to/dotgit.sh
 
 ```
 .gg PATH       # find every place PATH is set or referenced
-.gg 'alias g'  # find all git aliases
+.gg 'alias g'  # find aliases starting with 'g'
 ```
 
-Everything else is a standard git alias pointed at the dotfiles repo.
+Everything else is a small function wrapping git so it is pointed at the dotfiles repo.
 
 ### a normal workflow for making configuration changes
 
@@ -70,8 +71,7 @@ Everything else is a standard git alias pointed at the dotfiles repo.
 3. `.gc -m 'commit comment' .zshrc` - will commit the changes
 4. `.gp` - pushes the changes to the origin
 
-### a list of all aliases defined
-
+### a list of all commands defined
 
 | alias | action | note |
 | --- | --- | --- |
@@ -115,7 +115,7 @@ Everything else is a standard git alias pointed at the dotfiles repo.
 
 ## requirements
 
-- `EDITOR` set to your liking 
+- `EDITOR` set to your liking
 - [git](https://git-scm.com/)
 - [bat](https://github.com/sharkdp/bat) (optional, default preview command)
 - [fzf](https://github.com/junegunn/fzf) (optional)
@@ -126,16 +126,29 @@ Everything else is a standard git alias pointed at the dotfiles repo.
 
 1. clone this repository or simply copy the [dotgit.sh](./dotgit.sh)
 2. add some configuration sauce to your shell initialization (.i.e. `.zshrc` or `.bashrc`). The `DOT_REPO` and `DOT_HOME` variables **must be set** for the dotgit.sh to load!
+
   ```bash
   export DOT_REPO="${HOME}/.dotfiles"   # this is where the repo will live
   export DOT_HOME="${HOME}"             # this is generally the same as `$HOME`
   export DOT_ORIGIN="git@github.com:user/your-dotfiles-repo.git"   # optional
   source <path to dotGit.sh>
   ```
-3. restart your shell or `source ~/.zshrc` or `source ~/.bashrc`
-4. run `.ginit` to start a new repo, or `.gclone` to clone an existing one
+
+1. restart your shell or `source ~/.zshrc` or `source ~/.bashrc`
+2. run `.ginit` to start a new repo, or `.gclone` to clone an existing one
     - if cloning: `.gco <branch>` to checkout your config files (see *initial clone cleanup* below if files conflict)
     - if initializing: start tracking files with `.ga`
+
+## tab completion
+
+Tab completion is built right into `dotgit.sh` — no extra files to source.
+
+- **`.g<tab>`** completes git commands (via your existing git completions)
+- **`.ga<tab>`**, **`.gc<tab>`**, etc. each complete as their git subcommand
+- **`.ge<tab>`** completes tracked dotfile names from `git ls-files`
+- **`.gg<tab>`** completes as `git grep`
+
+Bash uses the `bash-completion` package's `_git` function if available. Zsh uses `compdef` and its built-in `_git`. Neither is required — without them, completion falls back to file/directory names. A reload (`source ~/.zshrc` or `source ~/.bashrc`) is all you need.
 
 ## configuration
 
@@ -149,12 +162,12 @@ Everything else is a standard git alias pointed at the dotfiles repo.
 | `DOTGIT_PREVIEW` | `bat -p --color=always` | fzf preview command |
 | `DOTGIT_MULTI_LIMIT` | `5` | max files selectable at once in `.ge` and `.gg` |
 | `DOTGIT_OPEN_FMT` | `split` | how `.gg` passes file+line to the editor; `split` uses `+line file` (works with most editors); set to `+e {file}\|{line}` for vim/nvim multi-file line jumping |
-| `DOTGIT_ANYGIT` | *(unset)* | set to `yes` to also load unprefixed `g*` aliases for any git repo |
+| `DOTGIT_ANYGIT` | *(unset)* | set to `yes` to also load unprefixed `g*` alias functions for any git repo |
 | `DEBUG` | *(unset)* | set to any value to print load/unload messages |
 
 ### ANYGIT
 
-Setting `DOTGIT_ANYGIT=yes` causes dotGit to source a transformed copy of itself that registers a parallel set of aliases without the leading `.` — so `.ga` becomes `ga`, `.gc` becomes `gc`, etc. These work against whichever git repo your shell is currently in, like ordinary git aliases. Yes, `ge` and `gg` are included.
+Setting `DOTGIT_ANYGIT=yes` causes dotGit to source a transformed copy of itself that registers a parallel set of function aliases without the leading `.` — so `.ga` becomes `ga`, `.gc` becomes `gc`, etc. These work against whichever git repo your shell is currently in, like ordinary git aliases. Yes, `ge` and `gg` are included.
 
 ## initial clone cleanup
 
@@ -168,7 +181,6 @@ To remove all the conflicting files, simply change the `echo` in the above comma
 
 ## future features
 
-- command line completion
 - manage system configuration files
 
 ## alternatives

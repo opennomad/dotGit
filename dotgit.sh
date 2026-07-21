@@ -3,92 +3,107 @@
 [[ ! "$DOT_REPO" ]] && echo "NOT setting dotgit aliases, since DOT_REPO not set." && return
 [[ ! "$DOT_HOME" ]] && echo "NOT setting dotgit aliases, since DOT_HOME not set." && return
 
-[[ -n "$DEBUG" ]] && echo loading dotgit aliases
+[[ -n "$DEBUG" ]] && echo loading dotgit functions
 
 [[ -z "$DOTGIT_MULTI_LIMIT" ]] && DOTGIT_MULTI_LIMIT=5
 [[ -z "$DOTGIT_PREVIEW" ]] && DOTGIT_PREVIEW='bat -p --color=always'
-[[ -z "$DOTGIT_OPEN_FMT" ]] && DOTGIT_OPEN_FMT='split' # or e.g. '+e {file}|{line}' for nvim
+[[ -z "$DOTGIT_OPEN_FMT" ]] && DOTGIT_OPEN_FMT='split'
 
-# the master alias
-alias .git='git --git-dir=${DOT_REPO} --work-tree=${DOT_HOME}'
-# the short one
-alias .g='.git'
+# Internal: run git with dotfiles repo paths.
+# Isolated on purpose — the anygit sed removes this function
+# and rewrites all call sites to use bare `git`.
+_dotgit_git() {
+  git --git-dir="${DOT_REPO}" --work-tree="${DOT_HOME}" "$@"
+}
 
-# and all the shortcuts
-alias .ga='.git add'
-alias .gc='.git commit'
-alias .gco='.git checkout'
-alias .gd='.git diff'
-alias .gds='.git diff --stat'
-alias .gss='.git status --short'
-alias .glo='.git log --oneline --decorate'
-alias .glg='.git log --stat'
-alias .glgp='.git log --stat --patch'
-alias .gbl='.git blame -w'
-alias .gb='.git branch'
-alias .gba='.git branch --all'
-alias .gbd='.git branch --delete'
-alias .gbD='.git branch --delete --force'
-alias .gm='.git merge'
-alias .gma='.git merge --abort'
-alias .gmc='.git merge --continue'
-alias .gc!='.git commit --verbose --amend'
-alias .gcm='.git commit --message'
-alias .gcp='.git cherry-pick'
-alias .gcpa='.git cherry-pick --abort'
-alias .gcpc='.git cherry-pick --continue'
-alias .gclean='.git clean --interactive -d'
-alias .ginit='git init --bare "${DOT_REPO}"; .git config --local status.showUntrackedFiles no'
-# only set up push and pull if DOT_ORIGIN is set
+# user-facing commands
+.git() { _dotgit_git "$@"; }
+.g() { _dotgit_git "$@"; }
+
+.ga()   { _dotgit_git add "$@"; }
+.gc()   { _dotgit_git commit "$@"; }
+.gco()  { _dotgit_git checkout "$@"; }
+.gd()   { _dotgit_git diff "$@"; }
+.gds()  { _dotgit_git diff --stat "$@"; }
+.gss()  { _dotgit_git status --short "$@"; }
+.glo()  { _dotgit_git log --oneline --decorate "$@"; }
+.glg()  { _dotgit_git log --stat "$@"; }
+.glgp() { _dotgit_git log --stat --patch "$@"; }
+.gbl()  { _dotgit_git blame -w "$@"; }
+.gb()   { _dotgit_git branch "$@"; }
+.gba()  { _dotgit_git branch --all "$@"; }
+.gbd()  { _dotgit_git branch --delete "$@"; }
+.gbD()  { _dotgit_git branch --delete --force "$@"; }
+.gm()   { _dotgit_git merge "$@"; }
+.gma()  { _dotgit_git merge --abort "$@"; }
+.gmc()  { _dotgit_git merge --continue "$@"; }
+.gcm()  { _dotgit_git commit --message "$@"; }
+.gcp()  { _dotgit_git cherry-pick "$@"; }
+.gcpa() { _dotgit_git cherry-pick --abort "$@"; }
+.gcpc() { _dotgit_git cherry-pick --continue "$@"; }
+.gclean() { _dotgit_git clean --interactive -d "$@"; }
+
+# push / pull — guard on DOT_ORIGIN
 if [[ -n "$DOT_ORIGIN" ]]; then
-  alias .gp='.git push'
-  alias .gl='.git pull'
-  alias .gclone='git clone --bare "${DOT_ORIGIN}" "${DOT_REPO}"; .git config --local status.showUntrackedFiles no'
+  .gp()  { _dotgit_git push "$@"; }
+  .gl()  { _dotgit_git pull "$@"; }
+  .gclone() {
+    git clone --bare "${DOT_ORIGIN}" "${DOT_REPO}" &&
+    _dotgit_git config --local status.showUntrackedFiles no
+  }
 else
-  alias .gp='echo "error: must first configure DOT_ORIGIN"'
-  alias .gl='echo "error: must first configure DOT_ORIGIN"'
-  alias .gclone='echo "error: must first configure DOT_ORIGIN"'
+  .gp()  { echo "error: must first configure DOT_ORIGIN"; }
+  .gl()  { echo "error: must first configure DOT_ORIGIN"; }
+  .gclone() { echo "error: must first configure DOT_ORIGIN"; }
 fi
-# if lazygit or gitui are available, we set up a .lazygit and .gitui
-[[ $(command -v lazygit) ]] &&
-  alias .lazygit='lazygit -g ${DOT_REPO}/ -w ${DOT_HOME}' &&
-  alias .lg='.lazygit'
-[[ $(command -v gitui) ]] &&
-  alias .gitui='gitui -d ${DOT_REPO}/ -w ${DOT_HOME}'
 
-# if fzf is installed we can have nice things
-# https://github.com/junegunn/fzf
+# .gc! — ! not valid in function names, so alias it
+.gcam() { _dotgit_git commit --verbose --amend "$@"; }
+alias .gc!='.gcam'
+
+# setup
+.ginit() {
+  git init --bare "${DOT_REPO}" &&
+  _dotgit_git config --local status.showUntrackedFiles no
+}
+
+# GUI front-ends
+if [[ $(command -v lazygit) ]]; then
+  .lazygit() { lazygit -g "${DOT_REPO}/" -w "${DOT_HOME}"; }
+  .lg() { .lazygit "$@"; }
+fi
+[[ $(command -v gitui) ]] &&
+  .gitui() { gitui -d "${DOT_REPO}/" -w "${DOT_HOME}"; }
+
+# interactive commands (fzf)
 if [[ $(command -v fzf) ]]; then
-  read -r -d '' FZF_HEADER <<EOF
-[enter] open/edit   [ctrl-/] toggle preview   [ctrl-w] toggle wrap
-EOF
   fzf_opts=(--multi="$DOTGIT_MULTI_LIMIT" --ansi -0
     --preview-window "right,60%,<60(down,75%),+{2}/2"
-    --header "$FZF_HEADER"
+    --header '[enter] open/edit   [ctrl-/] toggle preview   [ctrl-w] toggle wrap'
     --bind 'ctrl-z:ignore'
     --bind 'ctrl-/:toggle-preview'
     --bind 'ctrl-w:toggle-preview-wrap'
   )
-  _dotgit_ge() {
+
+  .ge() {
     local gitdir result
     local -a files
-    gitdir=$(.git rev-parse --show-toplevel)
-    result=$(cd "$gitdir" && .git ls-files --full-name |
+    gitdir=$(_dotgit_git rev-parse --show-toplevel) || return
+    result=$(cd "$gitdir" >/dev/null 2>&1 && _dotgit_git ls-files --full-name |
       fzf "${fzf_opts[@]}" \
         --preview "$DOTGIT_PREVIEW {1}" \
         --bind "enter:accept-non-empty" \
-        -q "${@:-}")
+        -q "${*:-}")
     [[ -z "$result" ]] && return
     while IFS= read -r line; do files+=("$line"); done <<<"$result"
     (cd "$gitdir" && "$EDITOR" "${files[@]}")
   }
-  alias .ge='_dotgit_ge'
 
-  _dotgit_gg() {
+  .gg() {
     local gitdir result clean fname lnum
     local -a editor_args
-    gitdir=$(.git rev-parse --show-toplevel)
-    result=$(cd "$gitdir" && .git grep --full-name --color=always -n "$@" |
+    gitdir=$(_dotgit_git rev-parse --show-toplevel) || return
+    result=$(cd "$gitdir" && _dotgit_git grep --full-name --color=always -n "$@" |
       fzf "${fzf_opts[@]}" -d ":" \
         --preview "$DOTGIT_PREVIEW -H{2} {1}")
     [[ -z "$result" ]] && return
@@ -107,13 +122,168 @@ EOF
     done <<<"$result"
     [[ ${#editor_args[@]} -gt 0 ]] && (cd "$gitdir" && "$EDITOR" "${editor_args[@]}")
   }
-  alias .gg='_dotgit_gg'
 else
-  # simplified grep but no "interactive file select"
-  alias .gg='.git grep'
+  .gg() { _dotgit_git grep "$@"; }
 fi
 
-[[ -n "$DEBUG" ]] && echo dotgit aliases loaded
-# shellcheck source=/dev/null
-[[ "$DOTGIT_ANYGIT" == 'yes' ]] &&
-  sed '/alias \.g.*DOT_REPO/d; s/\.g/g/g; s/dotgit/anygit/g' <"${BASH_SOURCE[0]:-$0}" | source /dev/stdin
+[[ -n "$DEBUG" ]] && echo dotgit functions loaded
+
+# ANYGIT mode: source a transformed copy with unprefixed names
+if [[ "$DOTGIT_ANYGIT" == 'yes' ]] && [[ -z "$_DOTGIT_ANYGIT_SOURCED" ]]; then
+  export _DOTGIT_ANYGIT_SOURCED=1
+  # shellcheck source=/dev/null
+  source <(
+    sed -e '/^_dotgit_git/,/^}/d' \
+        -e '/^\.git()/d' \
+        -e '/^# ========== tab completion ==========$/,$d' \
+        -e 's/\b_dotgit_git\b/git/g' \
+        -e 's/\.g/g/g' \
+        -e 's/\bdotgit\b/anygit/g' \
+        "${BASH_SOURCE[0]:-$0}"
+  )
+fi
+
+# ========== tab completion ==========
+
+_dotgit_complete() {
+  local cmd="${COMP_WORDS[0]}"
+  local cur="${COMP_WORDS[COMP_CWORD]}"
+
+  # Map dotgit function to the equivalent git subcommand + flags
+  # so we can delegate to git's own completion via _git().
+  _dotgit_delegate() {
+    local -a orig=("${COMP_WORDS[@]}")
+    local orig_idx=$COMP_CWORD
+    COMP_WORDS=(git "$@" "${orig[@]:1}")
+    COMP_CWORD=$((orig_idx + $#))
+    _git 2>/dev/null
+    COMP_WORDS=("${orig[@]}")
+    COMP_CWORD=$orig_idx
+  }
+
+  case "$cmd" in
+    .git|.g)              _dotgit_delegate ;;
+    .ga)
+      local gitdir line
+      gitdir=$(_dotgit_git rev-parse --show-toplevel 2>/dev/null) || return
+      while IFS= read -r line; do
+        [[ -z "$cur" || "$line" == "$cur"* ]] && COMPREPLY+=("$line")
+      done < <(cd "$gitdir" >/dev/null 2>&1 && { _dotgit_git ls-files --full-name; _dotgit_git ls-files --others --exclude-standard --directory; } 2>/dev/null)
+      ;;
+    .gc)                  _dotgit_delegate commit ;;
+    .gco)                 _dotgit_delegate checkout ;;
+    .gd)                  _dotgit_delegate diff ;;
+    .gds)                 _dotgit_delegate diff --stat ;;
+    .gss)                 _dotgit_delegate status --short ;;
+    .glo)                 _dotgit_delegate log --oneline --decorate ;;
+    .glg)                 _dotgit_delegate log --stat ;;
+    .glgp)                _dotgit_delegate log --stat --patch ;;
+    .gbl)                 _dotgit_delegate blame -w ;;
+    .gb)                  _dotgit_delegate branch ;;
+    .gba)                 _dotgit_delegate branch --all ;;
+    .gbd)                 _dotgit_delegate branch --delete ;;
+    .gbD)                 _dotgit_delegate branch --delete --force ;;
+    .gm)                  _dotgit_delegate merge ;;
+    .gma)                 _dotgit_delegate merge --abort ;;
+    .gmc)                 _dotgit_delegate merge --continue ;;
+    .gcm)                 _dotgit_delegate commit --message ;;
+    .gcp)                 _dotgit_delegate cherry-pick ;;
+    .gcpa)                _dotgit_delegate cherry-pick --abort ;;
+    .gcpc)                _dotgit_delegate cherry-pick --continue ;;
+    .gclean)              _dotgit_delegate clean --interactive -d ;;
+    .gp)                  _dotgit_delegate push ;;
+    .gl)                  _dotgit_delegate pull ;;
+    .gcam|'.gc!')         _dotgit_delegate commit --verbose --amend ;;
+    .ge)
+      local gitdir line
+      gitdir=$(_dotgit_git rev-parse --show-toplevel 2>/dev/null) || return
+      while IFS= read -r line; do
+        [[ -z "$cur" || "$line" == "$cur"* ]] && COMPREPLY+=("$line")
+      done < <(cd "$gitdir" >/dev/null 2>&1 && _dotgit_git ls-files --full-name 2>/dev/null)
+      ;;
+    .gg)
+      _dotgit_delegate grep ;;
+  esac
+}
+
+if [[ -n "$BASH_VERSION" ]] && [[ -t 0 ]]; then
+  for _dotgit_cmd in .git .g .ga .gc .gco .gd .gds .gss .glo .glg .glgp \
+                     .gbl .gb .gba .gbd .gbD .gm .gma .gmc .gcm .gcp \
+                     .gcpa .gcpc .gclean .gp .gl .ginit .gclone .gcam \
+                     .ge .gg .lazygit .lg .gitui; do
+    complete -o bashdefault -o default -F _dotgit_complete "$_dotgit_cmd" 2>/dev/null || true
+  done
+  unset _dotgit_cmd
+fi
+
+if [[ -n "$ZSH_VERSION" ]] && [[ -o interactive ]]; then
+  # shellcheck disable=SC1087,SC1090,SC2034,SC2296
+  _dotgit_zsh_complete() {
+    local cmd="${words[1]}"
+    _dotgit_zsh_delegate() {
+      local -a orig_words=("${words[@]}")
+      local orig_cword=$CURRENT
+      local service=git
+      words=(git "$@" "${orig_words[@]:1}")
+      (( CURRENT = CURRENT + $# ))
+      _git 2>/dev/null
+      words=("${orig_words[@]}")
+      CURRENT=$orig_cword
+    }
+    case "$cmd" in
+      .git|.g)              _dotgit_zsh_delegate ;;
+      .ga)
+        local gitdir line
+        gitdir=$(_dotgit_git rev-parse --show-toplevel 2>/dev/null) || return 1
+        local -a files
+        while IFS= read -r line; do
+          [[ -z "$PREFIX" || "$line" == "$PREFIX"* ]] && files+=("$line")
+      done < <(cd "$gitdir" >/dev/null 2>&1 && { _dotgit_git ls-files --full-name; _dotgit_git ls-files --others --exclude-standard --directory; } 2>/dev/null)
+        _describe -t files 'file' files
+        ;;
+      .gc)                  _dotgit_zsh_delegate commit ;;
+      .gco)                 _dotgit_zsh_delegate checkout ;;
+      .gd)                  _dotgit_zsh_delegate diff ;;
+      .gds)                 _dotgit_zsh_delegate diff --stat ;;
+      .gss)                 _dotgit_zsh_delegate status --short ;;
+      .glo)                 _dotgit_zsh_delegate log --oneline --decorate ;;
+      .glg)                 _dotgit_zsh_delegate log --stat ;;
+      .glgp)                _dotgit_zsh_delegate log --stat --patch ;;
+      .gbl)                 _dotgit_zsh_delegate blame -w ;;
+      .gb)                  _dotgit_zsh_delegate branch ;;
+      .gba)                 _dotgit_zsh_delegate branch --all ;;
+      .gbd)                 _dotgit_zsh_delegate branch --delete ;;
+      .gbD)                 _dotgit_zsh_delegate branch --delete --force ;;
+      .gm)                  _dotgit_zsh_delegate merge ;;
+      .gma)                 _dotgit_zsh_delegate merge --abort ;;
+      .gmc)                 _dotgit_zsh_delegate merge --continue ;;
+      .gcm)                 _dotgit_zsh_delegate commit --message ;;
+      .gcp)                 _dotgit_zsh_delegate cherry-pick ;;
+      .gcpa)                _dotgit_zsh_delegate cherry-pick --abort ;;
+      .gcpc)                _dotgit_zsh_delegate cherry-pick --continue ;;
+      .gclean)              _dotgit_zsh_delegate clean --interactive -d ;;
+      .gp)                  _dotgit_zsh_delegate push ;;
+      .gl)                  _dotgit_zsh_delegate pull ;;
+      .gcam|'.gc!')         _dotgit_zsh_delegate commit --verbose --amend ;;
+      .ge)
+        local gitdir line
+        gitdir=$(_dotgit_git rev-parse --show-toplevel 2>/dev/null) || return 1
+        local -a files
+        while IFS= read -r line; do
+          [[ -z "$PREFIX" || "$line" == "$PREFIX"* ]] && files+=("$line")
+        done < <(cd "$gitdir" >/dev/null 2>&1 && _dotgit_git ls-files --full-name 2>/dev/null)
+        _describe -t files 'file' files
+        ;;
+      .gg)
+        _dotgit_zsh_delegate grep ;;
+    esac
+  }
+
+  for _dotgit_cmd in .git .g .ga .gc .gco .gd .gds .gss .glo .glg .glgp \
+                     .gbl .gb .gba .gbd .gbD .gm .gma .gmc .gcm .gcp \
+                     .gcpa .gcpc .gclean .gp .gl .ginit .gclone .gcam \
+                     '.gc!' .ge .gg .lazygit .lg .gitui; do
+    compdef _dotgit_zsh_complete "$_dotgit_cmd" 2>/dev/null || true
+  done
+  unset _dotgit_cmd
+fi
