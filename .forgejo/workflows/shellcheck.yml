@@ -12,7 +12,5 @@ jobs:
 
     steps:
       - uses: actions/checkout@v7
-      - name: Install ShellCheck
-        run: apt-get update && apt-get install -y shellcheck
       - name: Run ShellCheck
         run: shellcheck dotgit.sh demo/demo-note.sh
