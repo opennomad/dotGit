@@ -2,7 +2,7 @@
 
 ### a minimal and effective approach to dotfiles (and git repos)
 
-[![ShellCheck](https://code.opennomad.com/opennomad/dotGit/actions/workflows/shellcheck.yml/badge.svg)](https://code.opennomad.com/opennomad/dotGit/actions?workflow=shellcheck.yml)
+[![ShellCheck](https://img.shields.io/github/actions/workflow/status/opennomad/dotGit/shellcheck.yml?branch=main&label=ShellCheck)](https://github.com/opennomad/dotGit/actions?workflow=shellcheck.yml)
 
 mirrors: [Codeberg](https://codeberg.org/opennomad/dotGit) · [GitHub](https://github.com/opennomad/dotGit)
 

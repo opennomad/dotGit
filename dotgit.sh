@@ -20,40 +20,40 @@ _dotgit_git() {
 .git() { _dotgit_git "$@"; }
 .g() { _dotgit_git "$@"; }
 
-.ga()   { _dotgit_git add "$@"; }
-.gc()   { _dotgit_git commit "$@"; }
-.gco()  { _dotgit_git checkout "$@"; }
-.gd()   { _dotgit_git diff "$@"; }
-.gds()  { _dotgit_git diff --stat "$@"; }
-.gss()  { _dotgit_git status --short "$@"; }
-.glo()  { _dotgit_git log --oneline --decorate "$@"; }
-.glg()  { _dotgit_git log --stat "$@"; }
+.ga() { _dotgit_git add "$@"; }
+.gc() { _dotgit_git commit "$@"; }
+.gco() { _dotgit_git checkout "$@"; }
+.gd() { _dotgit_git diff "$@"; }
+.gds() { _dotgit_git diff --stat "$@"; }
+.gss() { _dotgit_git status --short "$@"; }
+.glo() { _dotgit_git log --oneline --decorate "$@"; }
+.glg() { _dotgit_git log --stat "$@"; }
 .glgp() { _dotgit_git log --stat --patch "$@"; }
-.gbl()  { _dotgit_git blame -w "$@"; }
-.gb()   { _dotgit_git branch "$@"; }
-.gba()  { _dotgit_git branch --all "$@"; }
-.gbd()  { _dotgit_git branch --delete "$@"; }
-.gbD()  { _dotgit_git branch --delete --force "$@"; }
-.gm()   { _dotgit_git merge "$@"; }
-.gma()  { _dotgit_git merge --abort "$@"; }
-.gmc()  { _dotgit_git merge --continue "$@"; }
-.gcm()  { _dotgit_git commit --message "$@"; }
-.gcp()  { _dotgit_git cherry-pick "$@"; }
+.gbl() { _dotgit_git blame -w "$@"; }
+.gb() { _dotgit_git branch "$@"; }
+.gba() { _dotgit_git branch --all "$@"; }
+.gbd() { _dotgit_git branch --delete "$@"; }
+.gbD() { _dotgit_git branch --delete --force "$@"; }
+.gm() { _dotgit_git merge "$@"; }
+.gma() { _dotgit_git merge --abort "$@"; }
+.gmc() { _dotgit_git merge --continue "$@"; }
+.gcm() { _dotgit_git commit --message "$@"; }
+.gcp() { _dotgit_git cherry-pick "$@"; }
 .gcpa() { _dotgit_git cherry-pick --abort "$@"; }
 .gcpc() { _dotgit_git cherry-pick --continue "$@"; }
 .gclean() { _dotgit_git clean --interactive -d "$@"; }
 
 # push / pull — guard on DOT_ORIGIN
 if [[ -n "$DOT_ORIGIN" ]]; then
-  .gp()  { _dotgit_git push "$@"; }
-  .gl()  { _dotgit_git pull "$@"; }
+  .gp() { _dotgit_git push "$@"; }
+  .gl() { _dotgit_git pull "$@"; }
   .gclone() {
     git clone --bare "${DOT_ORIGIN}" "${DOT_REPO}" &&
-    _dotgit_git config --local status.showUntrackedFiles no
+      _dotgit_git config --local status.showUntrackedFiles no
   }
 else
-  .gp()  { echo "error: must first configure DOT_ORIGIN"; }
-  .gl()  { echo "error: must first configure DOT_ORIGIN"; }
+  .gp() { echo "error: must first configure DOT_ORIGIN"; }
+  .gl() { echo "error: must first configure DOT_ORIGIN"; }
   .gclone() { echo "error: must first configure DOT_ORIGIN"; }
 fi
 
@@ -64,7 +64,7 @@ alias .gc!='.gcam'
 # setup
 .ginit() {
   git init --bare "${DOT_REPO}" &&
-  _dotgit_git config --local status.showUntrackedFiles no
+    _dotgit_git config --local status.showUntrackedFiles no
 }
 
 # GUI front-ends
@@ -134,12 +134,12 @@ if [[ "$DOTGIT_ANYGIT" == 'yes' ]] && [[ -z "$_DOTGIT_ANYGIT_SOURCED" ]]; then
   # shellcheck source=/dev/null
   source <(
     sed -e '/^_dotgit_git/,/^}/d' \
-        -e '/^\.git()/d' \
-        -e '/^# ========== tab completion ==========$/,$d' \
-        -e 's/\b_dotgit_git\b/git/g' \
-        -e 's/\.g/g/g' \
-        -e 's/\bdotgit\b/anygit/g' \
-        "${BASH_SOURCE[0]:-$0}"
+      -e '/^\.git()/d' \
+      -e '/^# ========== tab completion ==========$/,$d' \
+      -e 's/\b_dotgit_git\b/git/g' \
+      -e 's/\.g/g/g' \
+      -e 's/\bdotgit\b/anygit/g' \
+      "${BASH_SOURCE[0]:-$0}"
   )
 fi
 
@@ -162,127 +162,144 @@ _dotgit_complete() {
   }
 
   case "$cmd" in
-    .git|.g)              _dotgit_delegate ;;
-    .ga)
-      local gitdir line
-      gitdir=$(_dotgit_git rev-parse --show-toplevel 2>/dev/null) || return
-      while IFS= read -r line; do
-        [[ -z "$cur" || "$line" == "$cur"* ]] && COMPREPLY+=("$line")
-      done < <(cd "$gitdir" >/dev/null 2>&1 && { _dotgit_git ls-files --full-name; _dotgit_git ls-files --others --exclude-standard --directory; } 2>/dev/null)
-      ;;
-    .gc)                  _dotgit_delegate commit ;;
-    .gco)                 _dotgit_delegate checkout ;;
-    .gd)                  _dotgit_delegate diff ;;
-    .gds)                 _dotgit_delegate diff --stat ;;
-    .gss)                 _dotgit_delegate status --short ;;
-    .glo)                 _dotgit_delegate log --oneline --decorate ;;
-    .glg)                 _dotgit_delegate log --stat ;;
-    .glgp)                _dotgit_delegate log --stat --patch ;;
-    .gbl)                 _dotgit_delegate blame -w ;;
-    .gb)                  _dotgit_delegate branch ;;
-    .gba)                 _dotgit_delegate branch --all ;;
-    .gbd)                 _dotgit_delegate branch --delete ;;
-    .gbD)                 _dotgit_delegate branch --delete --force ;;
-    .gm)                  _dotgit_delegate merge ;;
-    .gma)                 _dotgit_delegate merge --abort ;;
-    .gmc)                 _dotgit_delegate merge --continue ;;
-    .gcm)                 _dotgit_delegate commit --message ;;
-    .gcp)                 _dotgit_delegate cherry-pick ;;
-    .gcpa)                _dotgit_delegate cherry-pick --abort ;;
-    .gcpc)                _dotgit_delegate cherry-pick --continue ;;
-    .gclean)              _dotgit_delegate clean --interactive -d ;;
-    .gp)                  _dotgit_delegate push ;;
-    .gl)                  _dotgit_delegate pull ;;
-    .gcam|'.gc!')         _dotgit_delegate commit --verbose --amend ;;
-    .ge)
-      local gitdir line
-      gitdir=$(_dotgit_git rev-parse --show-toplevel 2>/dev/null) || return
-      while IFS= read -r line; do
-        [[ -z "$cur" || "$line" == "$cur"* ]] && COMPREPLY+=("$line")
-      done < <(cd "$gitdir" >/dev/null 2>&1 && _dotgit_git ls-files --full-name 2>/dev/null)
-      ;;
-    .gg)
-      _dotgit_delegate grep ;;
+  .git | .g) _dotgit_delegate ;;
+  .ga)
+    local gitdir line
+    gitdir=$(_dotgit_git rev-parse --show-toplevel 2>/dev/null) || return
+    while IFS= read -r line; do
+      [[ -z "$cur" || "$line" == "$cur"* ]] && COMPREPLY+=("$line")
+    done < <(cd "$gitdir" >/dev/null 2>&1 && {
+      _dotgit_git ls-files --full-name
+      _dotgit_git ls-files --others --exclude-standard --directory
+    } 2>/dev/null)
+    ;;
+  .gc) _dotgit_delegate commit ;;
+  .gco) _dotgit_delegate checkout ;;
+  .gd) _dotgit_delegate diff ;;
+  .gds) _dotgit_delegate diff --stat ;;
+  .gss) _dotgit_delegate status --short ;;
+  .glo) _dotgit_delegate log --oneline --decorate ;;
+  .glg) _dotgit_delegate log --stat ;;
+  .glgp) _dotgit_delegate log --stat --patch ;;
+  .gbl) _dotgit_delegate blame -w ;;
+  .gb) _dotgit_delegate branch ;;
+  .gba) _dotgit_delegate branch --all ;;
+  .gbd) _dotgit_delegate branch --delete ;;
+  .gbD) _dotgit_delegate branch --delete --force ;;
+  .gm) _dotgit_delegate merge ;;
+  .gma) _dotgit_delegate merge --abort ;;
+  .gmc) _dotgit_delegate merge --continue ;;
+  .gcm) _dotgit_delegate commit --message ;;
+  .gcp) _dotgit_delegate cherry-pick ;;
+  .gcpa) _dotgit_delegate cherry-pick --abort ;;
+  .gcpc) _dotgit_delegate cherry-pick --continue ;;
+  .gclean) _dotgit_delegate clean --interactive -d ;;
+  .gp) _dotgit_delegate push ;;
+  .gl) _dotgit_delegate pull ;;
+  .gcam | '.gc!') _dotgit_delegate commit --verbose --amend ;;
+  .ge)
+    local gitdir line
+    gitdir=$(_dotgit_git rev-parse --show-toplevel 2>/dev/null) || return
+    while IFS= read -r line; do
+      [[ -z "$cur" || "$line" == "$cur"* ]] && COMPREPLY+=("$line")
+    done < <(cd "$gitdir" >/dev/null 2>&1 && _dotgit_git ls-files --full-name 2>/dev/null)
+    ;;
+  .gg)
+    _dotgit_delegate grep
+    ;;
   esac
 }
 
 if [[ -n "$BASH_VERSION" ]] && [[ -t 0 ]]; then
   for _dotgit_cmd in .git .g .ga .gc .gco .gd .gds .gss .glo .glg .glgp \
-                     .gbl .gb .gba .gbd .gbD .gm .gma .gmc .gcm .gcp \
-                     .gcpa .gcpc .gclean .gp .gl .ginit .gclone .gcam \
-                     .ge .gg .lazygit .lg .gitui; do
+    .gbl .gb .gba .gbd .gbD .gm .gma .gmc .gcm .gcp \
+    .gcpa .gcpc .gclean .gp .gl .ginit .gclone .gcam \
+    .ge .gg .lazygit .lg .gitui; do
     complete -o bashdefault -o default -F _dotgit_complete "$_dotgit_cmd" 2>/dev/null || true
   done
   unset _dotgit_cmd
 fi
 
 if [[ -n "$ZSH_VERSION" ]] && [[ -o interactive ]]; then
-  # shellcheck disable=SC1087,SC1090,SC2034,SC2296
+  # shellcheck disable=SC1087,SC1090,SC2034,SC2154,SC2296
   _dotgit_zsh_complete() {
     local cmd="${words[1]}"
     _dotgit_zsh_delegate() {
       local -a orig_words=("${words[@]}")
       local orig_cword=$CURRENT
       local service=git
-      words=(git "$@" "${orig_words[@]:1}")
-      (( CURRENT = CURRENT + $# ))
-      _git 2>/dev/null
+      if (( $# )); then
+        words=(git "$1" "${orig_words[@]:1}")
+        (( CURRENT = CURRENT + 1 ))
+        if (( $+functions[_git-$1] )); then
+          "_git-$1"
+        else
+          _git 2>/dev/null
+        fi
+      else
+        words=(git "${orig_words[@]:1}")
+        _git 2>/dev/null
+      fi
       words=("${orig_words[@]}")
       CURRENT=$orig_cword
     }
     case "$cmd" in
-      .git|.g)              _dotgit_zsh_delegate ;;
-      .ga)
-        local gitdir line
-        gitdir=$(_dotgit_git rev-parse --show-toplevel 2>/dev/null) || return 1
-        local -a files
-        while IFS= read -r line; do
-          [[ -z "$PREFIX" || "$line" == "$PREFIX"* ]] && files+=("$line")
-      done < <(cd "$gitdir" >/dev/null 2>&1 && { _dotgit_git ls-files --full-name; _dotgit_git ls-files --others --exclude-standard --directory; } 2>/dev/null)
-        _describe -t files 'file' files
-        ;;
-      .gc)                  _dotgit_zsh_delegate commit ;;
-      .gco)                 _dotgit_zsh_delegate checkout ;;
-      .gd)                  _dotgit_zsh_delegate diff ;;
-      .gds)                 _dotgit_zsh_delegate diff --stat ;;
-      .gss)                 _dotgit_zsh_delegate status --short ;;
-      .glo)                 _dotgit_zsh_delegate log --oneline --decorate ;;
-      .glg)                 _dotgit_zsh_delegate log --stat ;;
-      .glgp)                _dotgit_zsh_delegate log --stat --patch ;;
-      .gbl)                 _dotgit_zsh_delegate blame -w ;;
-      .gb)                  _dotgit_zsh_delegate branch ;;
-      .gba)                 _dotgit_zsh_delegate branch --all ;;
-      .gbd)                 _dotgit_zsh_delegate branch --delete ;;
-      .gbD)                 _dotgit_zsh_delegate branch --delete --force ;;
-      .gm)                  _dotgit_zsh_delegate merge ;;
-      .gma)                 _dotgit_zsh_delegate merge --abort ;;
-      .gmc)                 _dotgit_zsh_delegate merge --continue ;;
-      .gcm)                 _dotgit_zsh_delegate commit --message ;;
-      .gcp)                 _dotgit_zsh_delegate cherry-pick ;;
-      .gcpa)                _dotgit_zsh_delegate cherry-pick --abort ;;
-      .gcpc)                _dotgit_zsh_delegate cherry-pick --continue ;;
-      .gclean)              _dotgit_zsh_delegate clean --interactive -d ;;
-      .gp)                  _dotgit_zsh_delegate push ;;
-      .gl)                  _dotgit_zsh_delegate pull ;;
-      .gcam|'.gc!')         _dotgit_zsh_delegate commit --verbose --amend ;;
-      .ge)
-        local gitdir line
-        gitdir=$(_dotgit_git rev-parse --show-toplevel 2>/dev/null) || return 1
-        local -a files
-        while IFS= read -r line; do
-          [[ -z "$PREFIX" || "$line" == "$PREFIX"* ]] && files+=("$line")
-        done < <(cd "$gitdir" >/dev/null 2>&1 && _dotgit_git ls-files --full-name 2>/dev/null)
-        _describe -t files 'file' files
-        ;;
-      .gg)
-        _dotgit_zsh_delegate grep ;;
+    .git | .g) _dotgit_zsh_delegate ;;
+    .ga)
+      local gitdir line
+      gitdir=$(_dotgit_git rev-parse --show-toplevel 2>/dev/null) || return 1
+      local -a files
+      while IFS= read -r line; do
+        [[ -z "$PREFIX" || "$line" == "$PREFIX"* ]] && files+=("$line")
+      done < <(cd "$gitdir" >/dev/null 2>&1 && {
+        _dotgit_git ls-files --full-name
+        _dotgit_git ls-files --others --exclude-standard --directory
+      } 2>/dev/null)
+      _describe -t files 'file' files
+      ;;
+    .gc) _dotgit_zsh_delegate commit ;;
+    .gco) _dotgit_zsh_delegate checkout ;;
+    .gd) _dotgit_zsh_delegate diff ;;
+    .gds) _dotgit_zsh_delegate diff --stat ;;
+    .gss) _dotgit_zsh_delegate status --short ;;
+    .glo) _dotgit_zsh_delegate log --oneline --decorate ;;
+    .glg) _dotgit_zsh_delegate log --stat ;;
+    .glgp) _dotgit_zsh_delegate log --stat --patch ;;
+    .gbl) _dotgit_zsh_delegate blame -w ;;
+    .gb) _dotgit_zsh_delegate branch ;;
+    .gba) _dotgit_zsh_delegate branch --all ;;
+    .gbd) _dotgit_zsh_delegate branch --delete ;;
+    .gbD) _dotgit_zsh_delegate branch --delete --force ;;
+    .gm) _dotgit_zsh_delegate merge ;;
+    .gma) _dotgit_zsh_delegate merge --abort ;;
+    .gmc) _dotgit_zsh_delegate merge --continue ;;
+    .gcm) _dotgit_zsh_delegate commit --message ;;
+    .gcp) _dotgit_zsh_delegate cherry-pick ;;
+    .gcpa) _dotgit_zsh_delegate cherry-pick --abort ;;
+    .gcpc) _dotgit_zsh_delegate cherry-pick --continue ;;
+    .gclean) _dotgit_zsh_delegate clean --interactive -d ;;
+    .gp) _dotgit_zsh_delegate push ;;
+    .gl) _dotgit_zsh_delegate pull ;;
+    .gcam | '.gc!') _dotgit_zsh_delegate commit --verbose --amend ;;
+    .ge)
+      local gitdir line
+      gitdir=$(_dotgit_git rev-parse --show-toplevel 2>/dev/null) || return 1
+      local -a files
+      while IFS= read -r line; do
+        [[ -z "$PREFIX" || "$line" == "$PREFIX"* ]] && files+=("$line")
+      done < <(cd "$gitdir" >/dev/null 2>&1 && _dotgit_git ls-files --full-name 2>/dev/null)
+      _describe -t files 'file' files
+      ;;
+    .gg)
+      _dotgit_zsh_delegate grep
+      ;;
     esac
   }
 
   for _dotgit_cmd in .git .g .ga .gc .gco .gd .gds .gss .glo .glg .glgp \
-                     .gbl .gb .gba .gbd .gbD .gm .gma .gmc .gcm .gcp \
-                     .gcpa .gcpc .gclean .gp .gl .ginit .gclone .gcam \
-                     '.gc!' .ge .gg .lazygit .lg .gitui; do
+    .gbl .gb .gba .gbd .gbD .gm .gma .gmc .gcm .gcp \
+    .gcpa .gcpc .gclean .gp .gl .ginit .gclone .gcam \
+    '.gc!' .ge .gg .lazygit .lg .gitui; do
     compdef _dotgit_zsh_complete "$_dotgit_cmd" 2>/dev/null || true
   done
   unset _dotgit_cmd
