@@ -17,6 +17,9 @@ Under the hood it's a [bare git repo](https://news.ycombinator.com/item?id=11070
 Bonus: set `DOTGIT_ANYGIT=yes` and the same gg/ge functionality (without the leading dot) work across all your repos.
 
 ![dotGit demo](demo/demo.gif)
+![configure dotGit](./demo/configure.png)
+![dotGit grep](./demo/gg.png)
+![dotGit edit](./demo/ge.png)
 
 ## TL;DR
 
