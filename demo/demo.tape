@@ -6,76 +6,108 @@ Set Shell zsh
 Set Width 1200
 Set Height 450
 Set FontSize 16
-Set TypingSpeed 100ms
+Set TypingSpeed 50ms
 
-Sleep 1s
+Sleep 500ms
 
 Hide
-Type "export DOT_REPO=$HOME/.dotfiles DOT_HOME=$HOME && source /home/matthias/Code/dotGit/dotgit.sh"
+Type "export DOT_REPO=$HOME/.dotfiles DOT_HOME=$HOME && source ./dotgit.sh"
 Enter
-Sleep 500ms
+Sleep 300ms
 Show
+
+# configure dotGit
+Hide
+Type "./demo/demo-note.sh 'Configure dotGit'"
+Enter
+Sleep 300ms
+Show
+Sleep 2s
+
+Type "EDITOR=nvim"
+Sleep 800ms
+Enter
+Type "DOT_REPO=$HOME/.dotfiles"
+Sleep 800ms
+Enter
+Type "DOT_HOME=$HOME"
+Sleep 800ms
+Enter
+Type "source ./dotgit.sh"
+Enter
+
+Screenshot demo/configure.png
+Sleep 500ms
+
+Sleep 2s
+
 
 # .gg — grep your dotfiles and jump to the line
 Hide
 Type "./demo/demo-note.sh 'Search your dotfiles for PATH'"
 Enter
-Sleep 500ms
+Sleep 300ms
 Show
-Sleep 3s
+Sleep 2s
 
-Type "EDITOR=nano .gg PATH"
-Sleep 1500ms
+Type ".gg PATH"
+Sleep 800ms
 Enter
-Sleep 3000ms
+Sleep 2s
 
-Screenshot screenshot.png
-Sleep 1500ms
+Screenshot demo/gg.png
+Sleep 500ms
 
 Down
-Sleep 1500ms
+Sleep 400ms
 Down
-Sleep 1500ms
+Sleep 400ms
 Down
-Sleep 1500ms
+Sleep 400ms
 Down
-Sleep 1500ms
+Sleep 400ms
 Up
-Sleep 1200ms
+Sleep 300ms
 Up
-Sleep 1200ms
+Sleep 300ms
 Enter
-Sleep 2000ms
+Sleep 4s
 
-Ctrl+X
-Sleep 2500ms
+Type ":q!"
+Enter
+Sleep 800ms
 
 # .ge — fuzzy find and edit
 Hide
 Type "./demo/demo-note.sh 'Fuzzy find and edit your dotfiles'"
 Enter
-Sleep 500ms
+Sleep 300ms
 Show
-Sleep 3s
+Sleep 2s
 
-Type "EDITOR=nano .ge"
-Sleep 1500ms
+Type ".ge"
+Sleep 800ms
 Enter
-Sleep 3000ms
+Sleep 2s
+
+Screenshot demo/ge.png
+Sleep 500ms
+
 Down
-Sleep 1200ms
+Sleep 400ms
 Down
-Sleep 1200ms
+Sleep 400ms
 Down
-Sleep 1200ms
+Sleep 400ms
 Up
-Sleep 1000ms
+Sleep 300ms
 Type "zshrc"
-Sleep 2000ms
+Sleep 1s
 Down
-Sleep 1200ms
+Sleep 400ms
 Enter
-Sleep 2000ms
+Sleep 4s
 
-Ctrl+X
-Sleep 1500ms
+Type ":q!"
+Enter
+Sleep 800ms
